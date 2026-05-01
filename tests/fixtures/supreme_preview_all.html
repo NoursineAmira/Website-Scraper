@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>All Products – Spring/Summer 2026 Preview – Supreme</title>
+</head>
+<body>
+<!--
+  Synthetic HTML fixture that mimics the Next.js RSC payload structure
+  verified on supreme.com/previews/springsummer2026/all (2026-05-01).
+
+  The self.__next_f.push([1, "..."]) script tags contain a JSON-encoded
+  RSC protocol string. The string itself is double-escaped JSON.
+
+  This fixture contains 3 products covering the main parsing paths:
+    1. Valid product with category, variants, and image assetId.
+    2. Product with no variants (edge case — image_url and notes will be null).
+    3. Product with a slug containing a hyphen chain (sanitization test).
+
+  A 4th synthetic "malformed" entry (missing slug) is also included and
+  must be silently dropped by the parser.
+-->
+
+<!-- RSC initialization call (ignored by parser) -->
+<script>(self.__next_f=self.__next_f||[]).push([0])</script>
+
+<!--
+  RSC chunk containing the products array.
+  The outer string is JSON-encoded: inner quotes are escaped as \\"
+  and the whole value is the argument to push([1, "..."]).
+
+  We embed a small but realistic subset of the real data shape.
+-->
+<script>self.__next_f.push([1,"6:[\"$\",\"$L1d\",null,{\"products\":[{\"_id\":\"aaaaaaaa-0000-0000-0000-000000000001\",\"category\":{\"slug\":\"jackets\",\"title\":\"Jackets\"},\"categoryImages\":[],\"description\":\"A test jacket description.\",\"images\":null,\"productGroup\":null,\"season\":{\"slug\":\"springsummer2026\",\"title\":\"Spring\\/Summer 2026 Preview\",\"url\":\"\\/previews\\/springsummer2026\"},\"slug\":\"test-reversible-jacket\",\"title\":\"Test Reversible Jacket\",\"variants\":[{\"description\":\"Variant desc.\",\"hideFromGroupCarousel\":null,\"images\":[{\"alt\":null,\"asset\":{\"_id\":\"image-4a5adb23d52db7849a3eccb81d6dbeab5e986b31-1794x1800-jpg\",\"assetId\":\"4a5adb23d52db7849a3eccb81d6dbeab5e986b31\"},\"hideFromGroupCarousel\":null}],\"title\":\"Denim\"}]},{\"_id\":\"bbbbbbbb-0000-0000-0000-000000000002\",\"category\":{\"slug\":\"bags\",\"title\":\"Bags\"},\"categoryImages\":[],\"description\":\"A bag with no variants.\",\"images\":null,\"productGroup\":null,\"season\":{\"slug\":\"springsummer2026\",\"title\":\"Spring\\/Summer 2026 Preview\",\"url\":\"\\/previews\\/springsummer2026\"},\"slug\":\"test-side-bag\",\"title\":\"Test Side Bag\",\"variants\":[]},{\"_id\":\"cccccccc-0000-0000-0000-000000000003\",\"category\":{\"slug\":\"tops-sweaters\",\"title\":\"Tops\\/Sweaters\"},\"categoryImages\":[],\"description\":\"A tee with special chars in slug.\",\"images\":null,\"productGroup\":null,\"season\":{\"slug\":\"springsummer2026\",\"title\":\"Spring\\/Summer 2026 Preview\",\"url\":\"\\/previews\\/springsummer2026\"},\"slug\":\"test-box-logo-tee-special\",\"title\":\"Test Box Logo Tee  Special\",\"variants\":[{\"description\":\"White variant.\",\"hideFromGroupCarousel\":null,\"images\":[],\"title\":\"White\"}]},{\"_id\":\"dddddddd-0000-0000-0000-000000000004\",\"category\":{\"slug\":\"misc\",\"title\":\"Misc\"},\"categoryImages\":[],\"description\":\"Missing slug — must be skipped.\",\"images\":null,\"productGroup\":null,\"season\":{\"slug\":\"springsummer2026\",\"title\":\"Spring\\/Summer 2026 Preview\",\"url\":\"\\/previews\\/springsummer2026\"},\"slug\":\"\",\"title\":\"Should Be Skipped\",\"variants\":[]}]}]"])</script>
+
+</body>
+</html>
