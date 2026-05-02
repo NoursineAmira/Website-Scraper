@@ -38,7 +38,7 @@ cp .env.example .env
 
 ## Running the Demo
 
-### Offline demo (recommended for grading)
+### Offline demo
 
 Uses the synthetic fixture HTML. No network required. Shows the full pipeline including change detection.
 
