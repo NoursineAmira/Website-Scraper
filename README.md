@@ -2,7 +2,7 @@
 
 **Course:** Information Assurance & Security  
 **Target:** `https://supreme.com/previews/springsummer2026/all`  
-**Stack:** Python 3.11+, httpx, BeautifulSoup4, SQLAlchemy + SQLite, APScheduler, structlog, python-telegram-bot
+**Stack:** Python 3.11+, httpx, BeautifulSoup4, SQLAlchemy + SQLite, APScheduler, structlog
 
 ---
 
@@ -15,7 +15,7 @@ Supreme's preview page uses **Next.js App Router with React Server Components (R
 2. Regex extracts the `self.__next_f.push([1, "..."])` RSC chunks and decodes them
 3. `json.loads()` parses the embedded `"products"` array
 
-**Change detection:** On each scrape cycle, products present in the database but absent from the current response are marked `"removed"` and trigger an alert. This detects when Supreme quietly removes items from the preview.
+**Change detection:** On each scrape cycle, products present in the database but absent from the current response are marked `"removed"` and trigger an alert. Newly added products are marked `"in_preview"` and also trigger an alert. This detects when Supreme quietly adds or removes items from the preview.
 
 ---
 
@@ -31,7 +31,20 @@ pip install -r requirements.txt
 
 # 3. Configure credentials (optional — alerting works in mock mode without them)
 cp .env.example .env
-# Edit .env to add TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID if desired
+# Edit .env to add your DISCORD_WEBHOOK_URL if desired
+```
+
+---
+
+## Discord Webhook Setup 
+
+1. Open Discord → create a free server (or use an existing one)
+2. Click a channel's ⚙️ **Settings** → **Integrations** → **Webhooks** → **New Webhook**
+3. Copy the webhook URL
+4. Paste it in your `.env` file:
+
+```
+DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/your_id/your_token
 ```
 
 ---
@@ -46,7 +59,7 @@ Uses the synthetic fixture HTML. No network required. Shows the full pipeline in
 # Single run
 python demo.py --fixture
 
-# Two runs — second run simulates 2 products disappearing from the preview
+# Two runs — second run simulates products disappearing from the preview
 python demo.py --fixture --twice
 ```
 
@@ -58,6 +71,17 @@ Fetches live data from supreme.com.
 python demo.py
 ```
 
+### Web dashboard
+
+```bash
+python web_ui.py
+```
+
+Open `http://localhost:5000` in your browser. The dashboard lets you:
+- **Reset & Seed Demo** — loads 5 synthetic products silently (no alerts sent)
+- **Configure Next Scrape Cycle** — check products to remove or add new ones
+- **Run Simulated Scrape** — runs the full pipeline; sends Discord alerts for any additions or removals
+
 ### Continuous scheduler
 
 ```bash
@@ -68,13 +92,23 @@ Runs every `SCRAPE_INTERVAL_MINUTES` (default: 15). Stop with Ctrl-C.
 
 ---
 
+## Alert Types
+
+| Event | Discord Message |
+|---|---|
+| New product added to preview | 🆕 BRAND NEW PRODUCT ADDED |
+| Product back in preview | 🟢 BACK IN PREVIEW |
+| Product removed from preview | 🔴 REMOVED FROM PREVIEW |
+
+---
+
 ## Tests
 
 ```bash
 pytest tests/ -v
 ```
 
-All 52 tests run offline. No network calls, no Telegram credentials needed.
+All tests run offline. No network calls, no credentials needed.
 
 | Test file | What it covers |
 |---|---|
@@ -95,21 +129,21 @@ supreme_scraper/
 ├── crawler.py         httpx + certifi TLS, robots.txt gate, 2s rate limit
 ├── parser.py          BeautifulSoup → RSC extraction → JSON → validated dicts
 ├── store.py           Upsert, change detection, mark_removed, audit log
-├── alerting.py        Telegram Bot or mock-log fallback
+├── alerting.py        Discord Webhook or mock-log fallback
 └── scheduler.py       APScheduler wiring; audit log always written in finally
 ```
 
 ---
 
-## InfoSec Grading Checklist
+## InfoSec Checklist
 
 | Concept | Location | Demonstration |
 |---|---|---|
 | **TLS Enforcement** | `crawler.py:95` | `verify=certifi.where()` hardcoded; `test_tls.py` asserts no config toggle exists |
 | **Input Validation** | `parser.py:_sanitize_text`, `_normalize_url` | Type checks, length caps (`String(N)` on all columns), URL scheme whitelist, stock_status whitelist |
 | **Output Sanitization** | `parser.py:_sanitize_text` | Control char removal (`\x00-\x1f\x7f`), whitespace normalization before any DB write |
-| **Credential Management** | `config.py`, `.env.example`, `.gitignore` | `python-dotenv` loads token from `.env`; token never in source; `.env` gitignored |
-| **Log Redaction** | `logging_config.py:sensitive_filter` | Regex processor runs **before** `JSONRenderer`; strips token-shaped strings from every log event |
+| **Credential Management** | `config.py`, `.env.example`, `.gitignore` | `python-dotenv` loads webhook URL from `.env`; URL never in source; `.env` gitignored |
+| **Log Redaction** | `logging_config.py:sensitive_filter` | Regex processor runs **before** `JSONRenderer`; strips credential-shaped strings from every log event |
 | **Audit Trail** | `models.py:ScrapeLog`, `store.py:append_scrape_log` | Append-only table; no UPDATE path; written in `finally` block even on failure |
 | **Data Minimization** | `models.py` `String(N)` lengths, `parser.py` | Schema defines exactly what is stored; parser fills only named fields |
 | **Polite Crawling** | `crawler.py:_enforce_rate_limit` | 2-second `time.monotonic()` gap between requests |
@@ -117,7 +151,7 @@ supreme_scraper/
 | **Structured Logging** | `logging_config.py:configure_logging` | `structlog` with `JSONRenderer`; every event is machine-parseable JSON |
 | **Change Detection** | `store.py:upsert_drops`, `mark_removed_products` | `in_preview` → `removed` transition alerts; new product inserts trigger alert |
 | **SQL Injection Prevention** | `store.py` all queries | SQLAlchemy ORM with bound parameters; no string-formatted SQL anywhere |
-| **Dependency Pinning** | `requirements.txt` | All 12 runtime deps pinned to exact versions (supply chain auditability) |
+| **Dependency Pinning** | `requirements.txt` | All runtime deps pinned to exact versions (supply chain auditability) |
 | **Graceful Degradation** | `alerting.py`, `scheduler.py:finally` | Alert failure never propagates; audit log always written |
 | **Secret-Free Source** | All `.py` files | Zero credentials or tokens hardcoded anywhere in source |
 

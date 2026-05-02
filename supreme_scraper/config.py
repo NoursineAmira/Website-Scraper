@@ -63,11 +63,9 @@ class Settings:
     # ------------------------------------------------------------------ #
     # Credentials — read from env only, never hardcoded                   #
     # ------------------------------------------------------------------ #
-    TELEGRAM_BOT_TOKEN: str = field(
-        default_factory=lambda: os.getenv("TELEGRAM_BOT_TOKEN", "")
-    )
-    TELEGRAM_CHAT_ID: str = field(
-        default_factory=lambda: os.getenv("TELEGRAM_CHAT_ID", "")
+    
+    DISCORD_WEBHOOK_URL: str = field(
+    default_factory=lambda: os.getenv("DISCORD_WEBHOOK_URL", "")
     )
 
     # ------------------------------------------------------------------ #

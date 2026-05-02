@@ -117,7 +117,18 @@ async def upsert_drops(
                 existing.scrape_timestamp = record["scrape_timestamp"]
 
             else:
-                session.add(Drop(**record))
+                new_drop = Drop(**record)
+                session.add(new_drop)
+                await session.flush()  # gets the new ID from DB
+                changes.append(
+                    StockStatusChange(
+                        product_name=record["product_name"],
+                        product_url=record["product_url"],
+                        old_status="not_listed",
+                        new_status="in_preview",
+                        drop_id=new_drop.id,
+                    )
+                )
 
             upserted += 1
 

@@ -114,7 +114,7 @@ def _clear_demo_data_sync() -> None:
         session.commit()
 
 
-async def _run_demo_pipeline(products_data: list[dict]) -> dict:
+async def _run_demo_pipeline(products_data: list[dict], send_alerts: bool = True) -> dict:
     """
     Push a synthetic product list through the full parse → upsert →
     change-detection → audit-log pipeline, scoped to source_website='demo'.
@@ -147,6 +147,12 @@ async def _run_demo_pipeline(products_data: list[dict]) -> dict:
             records_upserted=upserted,
             error=None,
         )
+
+    # Send Discord alerts for any detected changes
+    if all_changes and send_alerts:
+        from supreme_scraper.alerting import AlertService
+        alert_svc = AlertService()
+        await alert_svc.send_bulk_alerts(all_changes)
 
     return {
         "upserted": upserted,
@@ -926,7 +932,7 @@ def demo_seed():
     """Clear demo rows and seed 5 synthetic products through the full pipeline."""
     _clear_demo_data_sync()
     try:
-        result = asyncio.run(_run_demo_pipeline(_DEMO_PRODUCTS_BASE))
+        result = asyncio.run(_run_demo_pipeline(_DEMO_PRODUCTS_BASE, send_alerts=False))
     except Exception:
         return jsonify({"error": traceback.format_exc(limit=3)}), 500
 
