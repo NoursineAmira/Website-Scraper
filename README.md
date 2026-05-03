@@ -156,6 +156,18 @@ supreme_scraper/
 | **Secret-Free Source** | All `.py` files | Zero credentials or tokens hardcoded anywhere in source |
 
 ---
+## Limitations
+
+- **RSC parsing is fragile:** The regex-based extraction of Next.js RSC chunks will break silently if Supreme updates their frontend framework version. A schema validation step on the extracted JSON would make failures explicit.
+- **Web UI has no authentication:** The Flask dashboard (`web_ui.py`) is intended for local use only and has no login or access control. It must never be exposed on a public or shared network.
+- **CA bundle freshness:** `certifi` should be updated regularly, as it bundles Mozilla's CA certificate list which changes when authorities are added or revoked.
+
+## Future Work
+
+- Add Alembic for proper schema migrations (noted in code but not implemented)
+- Add schema validation on parsed RSC JSON to catch upstream HTML structure changes early
+- Add authentication to the web dashboard for safer demo environments
+- Parameterize `TARGET_URL` via `.env` so season updates require no code edits
 
 ## Notes
 
